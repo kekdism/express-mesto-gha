@@ -5,7 +5,7 @@ export const getUsers = async (req, res) => {
     const users = await User.find({});
     res.send(users);
   } catch (err) {
-    res.status(400).send(err);
+    res.status(500).send(err);
   }
 };
 
@@ -15,7 +15,11 @@ export const getUserById = async (req, res) => {
     const user = await User.findById({ _id: userId });
     res.send(user);
   } catch (err) {
-    res.status(400).send(err);
+    if (err.name === "CastError") {
+      res.status(404).send({ message: "Запрашиваемый пользователь не найден" });
+      return;
+    }
+    res.status(500).send(err);
   }
 };
 
@@ -25,6 +29,10 @@ export const createUser = async (req, res) => {
     const newUser = await User.create({ name, about, avatar });
     res.send(newUser);
   } catch (err) {
+    if (err.name === "ValidationError") {
+      res.status(400).send({ message: "Переданы некорректные данные" });
+      return;
+    }
     res.status(500).send(err);
   }
 };
@@ -43,6 +51,10 @@ export const updateUser = async (req, res) => {
     );
     res.send(updatedUser);
   } catch (err) {
+    if (err.name === "ValidationError") {
+      res.status(400).send({ message: "Переданы некорректные данные" });
+      return;
+    }
     res.status(500).send(err);
   }
 };
@@ -61,6 +73,10 @@ export const updateUserAvatar = async (req, res) => {
     );
     res.send(updatedUser);
   } catch (err) {
+    if (err.name === "ValidationError") {
+      res.status(400).send({ message: "Переданы некорректные данные" });
+      return;
+    }
     res.status(500).send(err);
   }
 };

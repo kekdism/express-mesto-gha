@@ -1,5 +1,9 @@
 import Card from "../models/card.js";
 
+const notFoundError = new Error("Запрашиваемая карточка не найдена");
+notFoundError.name = "NotFound";
+notFoundError.message = "Запрашиваемая карточка не найдена";
+
 export const getCards = async (req, res) => {
   try {
     const cards = await Card.find({}).populate("owner");
@@ -16,6 +20,10 @@ export const createCard = async (req, res) => {
     const newCard = await Card.create({ name, link, owner: _id });
     res.send(newCard);
   } catch (err) {
+    if (err.name === "ValidationError") {
+      res.status(400).send({ message: "Переданы некорректные данные" });
+      return;
+    }
     res.status(500).send(err);
   }
 };
@@ -40,8 +48,15 @@ export const addLike = async (req, res) => {
       },
       { new: true }
     ).populate(["owner", "likes"]);
+    if (updatedCard === null) {
+      throw notFoundError;
+    }
+
     res.send(updatedCard);
   } catch (err) {
+    if (err.name === "NotFound") {
+      res.status(404).send({ message });
+    }
     res.status(500).send(err);
   }
 };
@@ -59,6 +74,10 @@ export const removeLike = async (req, res) => {
     ).populate(["owner", "likes"]);
     res.send(updatedCard);
   } catch (err) {
+    if (err.name === "CastError") {
+      res.status(400).send({ message: "Запрашиваемая карточка не найдена" });
+      return;
+    }
     res.status(500).send(err);
   }
 };
