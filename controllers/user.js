@@ -26,6 +26,10 @@ export const getUserById = async (req, res) => {
       res.status(404).send({ message: err.message });
       return;
     }
+    if (err.name === "CastError") {
+      res.status(400).send({ message: "Переданы некорректные данные" });
+      return;
+    }
     res.status(500).send(err);
   }
 };

@@ -24,6 +24,7 @@ export const createCard = async (req, res) => {
       res.status(400).send({ message: "Переданы некорректные данные" });
       return;
     }
+
     res.status(500).send(err);
   }
 };
@@ -33,6 +34,10 @@ export const deleteCard = async (req, res) => {
     const { cardId } = req.params;
     res.send(await Card.deleteOne({ _id: cardId }));
   } catch (err) {
+    if (err.name === "CastError") {
+      res.status(400).send({ message: "Переданы некорректные данные" });
+      return;
+    }
     res.status(500).send(err);
   }
 };
@@ -51,11 +56,14 @@ export const addLike = async (req, res) => {
     if (updatedCard === null) {
       throw notFoundError;
     }
-
     res.send(updatedCard);
   } catch (err) {
     if (err.name === "NotFound") {
       res.status(404).send({ message: err.message });
+      return;
+    }
+    if (err.name === "CastError") {
+      res.status(400).send({ message: "Переданы некорректные данные" });
       return;
     }
     res.status(500).send(err);
@@ -73,10 +81,17 @@ export const removeLike = async (req, res) => {
       },
       { new: true }
     ).populate(["owner", "likes"]);
+    if (updatedCard === null) {
+      throw notFoundError;
+    }
     res.send(updatedCard);
   } catch (err) {
+    if (err.name === "NotFound") {
+      res.status(404).send({ message: err.message });
+      return;
+    }
     if (err.name === "CastError") {
-      res.status(400).send({ message: "Запрашиваемая карточка не найдена" });
+      res.status(400).send({ message: "Переданы некорректные данные" });
       return;
     }
     res.status(500).send(err);
