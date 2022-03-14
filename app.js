@@ -22,7 +22,7 @@ app.use((req, res, next) => {
 
 app.use("/cards", cardRouter);
 app.use("/users", userRouter);
-app.get("*", (req, res) =>
+app.use("*", (req, res) =>
   res.status(404).send({ message: "Страница не существует" })
 );
 
