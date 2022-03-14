@@ -36,6 +36,7 @@ export const deleteCard = async (req, res) => {
     if (deleteStatus.deletedCount === 0) {
       throw notFoundError;
     }
+    res.send(deleteStatus);
   } catch (err) {
     if (err.name === "NotFound") {
       res.status(404).send({ message: err.message });
