@@ -1,5 +1,9 @@
 import User from "../models/user.js";
 
+const notFoundError = new Error("Запрашиваемый пользователь не найден");
+notFoundError.name = "NotFound";
+notFoundError.message = "Запрашиваемая карточка не найдена";
+
 export const getUsers = async (req, res) => {
   try {
     const users = await User.find({});
@@ -13,10 +17,13 @@ export const getUserById = async (req, res) => {
   try {
     const { userId } = req.params;
     const user = await User.findById({ _id: userId });
+    if (user === null) {
+      throw notFoundError;
+    }
     res.send(user);
   } catch (err) {
-    if (err.name === "CastError") {
-      res.status(404).send({ message: "Запрашиваемый пользователь не найден" });
+    if (err.name === "NotFound") {
+      res.status(404).send({ message: err.message });
       return;
     }
     res.status(500).send(err);
