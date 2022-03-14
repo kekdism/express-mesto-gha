@@ -22,6 +22,9 @@ app.use((req, res, next) => {
 
 app.use("/cards", cardRouter);
 app.use("/users", userRouter);
+app.get("*", (req, res) =>
+  res.status(404).send({ message: "Страница не существует" })
+);
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
