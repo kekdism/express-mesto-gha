@@ -55,7 +55,8 @@ export const addLike = async (req, res) => {
     res.send(updatedCard);
   } catch (err) {
     if (err.name === "NotFound") {
-      res.status(404).send({ message });
+      res.status(404).send({ message: err.message });
+      return;
     }
     res.status(500).send(err);
   }
