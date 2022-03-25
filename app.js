@@ -6,6 +6,7 @@ import router from './routes/router.js'
 import auth from './middlewares/auth.js'
 import { login, createUser } from './controllers/user.js'
 import cookieParser from 'cookie-parser';
+import { errors } from 'celebrate';
 
 
 dotenv.config();
@@ -28,6 +29,16 @@ app.post('/signup', createUser)
 app.use(auth)
 
 app.use(router);
+
+app.use(errors());
+
+app.use((err, req, res, next) => {
+  const { statusCode = 500, message } = err;
+  console.log(err)
+  res.status(statusCode).send(err);
+})
+
+//message: statusCode === 500 ? 'На сервере произошла ошибка' : message
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);

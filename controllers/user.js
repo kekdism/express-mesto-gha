@@ -1,79 +1,59 @@
 import User from '../models/user.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken'
+import { AuthorizationError, NotFoundError } from '../utils/errors.js'
 
 const notFoundError = new Error('Запрашиваемый пользователь не найден');
 notFoundError.name = 'NotFound';
 notFoundError.message = 'Запрашиваемая карточка не найдена';
 
-export const getUsers = async (req, res) => {
+export const getUsers = async (req, res, next) => {
   try {
-    const users = await User.find({});
+    const users = await User.find({}).select("-__v");
     res.send(users);
   } catch (err) {
-    res.status(500).send(err);
+    next(err);
   }
 };
 
-export const getUserById = async (req, res) => {
+export const getUserById = async (req, res, next) => {
   try {
     const { userId } = req.params;
     const user = await User.findById({ _id: userId }).select('-__v');
-    if (user === null) {
-      throw notFoundError;
+    if (!user) {
+      throw new NotFoundError('Такого пользователя не существует')
     }
     res.send(user);
   } catch (err) {
-    if (err.name === 'NotFound') {
-      res.status(404).send({ message: err.message });
-      return;
-    }
-    if (err.name === 'CastError') {
-      res.status(400).send({ message: 'Переданы некорректные данные' });
-      return;
-    }
-    res.status(500).send(err);
+    next(err);
   }
 };
 
-export const getUserByToken = async (req, res) => {
+export const getCurrentUser = async (req, res, next) => {
   try {
-    const token = req.token;
-    const { _id } = jwt.verify(token, process.env.JWT_SECRET);
+    const { _id } = req.user;
     const user = await User.findById({ _id }).select('-__v');
-    if (user === null) {
-      throw notFoundError;
+    if (!user) {
+      throw new NotFoundError('Такого пользователя не существует')
     }
     res.send(user);
   } catch (err) {
-    if (err.name === 'NotFound') {
-      res.status(404).send({ message: err.message });
-      return;
-    }
-    if (err.name === 'CastError') {
-      res.status(400).send({ message: 'Переданы некорректные данные' });
-      return;
-    }
-    res.status(500).send(err);
+    next(err);
   }
 };
 
-export const createUser = async (req, res) => {
+export const createUser = async (req, res, next) => {
   try {
     const { name, about, avatar, email, password } = req.body;
     const hashPassword = await bcrypt.hash(password, 10);
     const newUser = await User.create({ name, about, avatar, email, password: hashPassword });
     res.send(newUser);
   } catch (err) {
-    if (err.name === 'ValidationError') {
-      res.status(400).send({ message: err.message });
-      return;
-    }
-    res.status(500).send(err);
+    next(err);
   }
 };
 
-export const updateUser = async (req, res) => {
+export const updateUser = async (req, res, next) => {
   try {
     const { name, about } = req.body;
     const { _id } = req.user;
@@ -87,15 +67,11 @@ export const updateUser = async (req, res) => {
     ).select("-__v");
     res.send(updatedUser);
   } catch (err) {
-    if (err.name === 'ValidationError') {
-      res.status(400).send({ message: 'Переданы некорректные данные' });
-      return;
-    }
-    res.status(500).send(err);
+    next(err);
   }
 };
 
-export const updateUserAvatar = async (req, res) => {
+export const updateUserAvatar = async (req, res, next) => {
   try {
     const { avatar } = req.body;
     const { _id } = req.user;
@@ -109,24 +85,20 @@ export const updateUserAvatar = async (req, res) => {
     ).select("-__v");
     res.send(updatedUser);
   } catch (err) {
-    if (err.name === 'ValidationError') {
-      res.status(400).send({ message: 'Переданы некорректные данные' });
-      return;
-    }
-    res.status(500).send(err);
+    next(err);
   }
 };
 
-export const login = async (req, res) => {
+export const login = async (req, res, next) => {
   try {
     const { password, email } = req.body;
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select("+password");
     if (!user) {
-      throw notFoundError;
+      throw new AuthorizationError('Не верный email');
     }
     const isPassCorrect = await bcrypt.compare(password, user.password);
     if (!isPassCorrect) {
-      throw new Error('Не верный пароль');
+      throw new AuthorizationError('Не верный пароль');
     }
     const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET)
     res.cookie('jwt', token, {
@@ -135,6 +107,6 @@ export const login = async (req, res) => {
     });
     res.send({ _id: user._id });
   } catch (err) {
-    res.send({ message: err.message })
+    next(err)
   }
 }
