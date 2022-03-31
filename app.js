@@ -50,6 +50,4 @@ app.use((err, req, res, next) => {
   res.status(statusCode).send({ message });
 });
 
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}`);
-});
+app.listen(PORT);
