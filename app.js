@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import {
-  celebrate, isCelebrateError, Segments,
+  celebrate, errors, isCelebrateError, Segments,
 } from 'celebrate';
 import Joi from 'joi';
 import router from './routes/router.js';
@@ -41,11 +41,9 @@ app.use(auth);
 
 app.use(router);
 
+app.use(errors());
+
 app.use((err, req, res, next) => {
-  if (isCelebrateError(err)) {
-    res.status('400').send({ message: 'Переданны не верные данные' });
-    return;
-  }
   const { statusCode = 500, message = 'На сервере произошла ошибка' } = err;
   res.status(statusCode).send({ message });
 });
