@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import valid from 'validator';
 
 const cardSchema = new mongoose.Schema({
   name: {
@@ -10,6 +11,10 @@ const cardSchema = new mongoose.Schema({
   link: {
     type: String,
     required: true,
+    validate: {
+      validator: (v) => valid.isURL(v),
+      message: 'Not a valid avatar url',
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,

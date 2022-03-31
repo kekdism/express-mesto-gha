@@ -1,5 +1,6 @@
 import Card from '../models/card.js';
-import { NotFoundError, PermissionError } from '../utils/errors.js';
+import NotFoundError from '../utils/errors/NotFoundError.js';
+import PermissionError from '../utils/errors/PermissionError.js';
 
 export const getCards = async (req, res, next) => {
   try {
@@ -28,7 +29,7 @@ export const deleteCard = async (req, res, next) => {
     if (!cardToDelete) {
       throw new NotFoundError('Не верный номер карточки');
     }
-    if (cardToDelete.owner !== req.user._id) {
+    if (!cardToDelete.owner.equals(req.user._id)) {
       throw new PermissionError('Не достаточно прав');
     }
     const deleteStatus = await Card.deleteOne({ _id: cardId });
