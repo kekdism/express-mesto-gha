@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import {
-  celebrate, errors, isCelebrateError, Segments,
+  celebrate, errors, Segments,
 } from 'celebrate';
 import Joi from 'joi';
 import router from './routes/router.js';
