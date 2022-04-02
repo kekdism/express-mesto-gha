@@ -5,6 +5,8 @@ import AuthorizationError from '../utils/errors/AuthorizationError.js';
 import DuplicateError from '../utils/errors/DuplicateError.js';
 import NotFoundError from '../utils/errors/NotFoundError.js';
 
+const { JWT_SECRET = 'JWT_SECRET' } = process.env;
+
 export const getUsers = async (req, res, next) => {
   try {
     const users = await User.find({}).select('-__v');
@@ -107,7 +109,7 @@ export const login = async (req, res, next) => {
     if (!isPassCorrect) {
       throw new AuthorizationError('Не верный пароль');
     }
-    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
+    const token = jwt.sign({ _id: user._id }, JWT_SECRET);
     res.cookie('jwt', token, {
       maxAge: 7 * 24 * 60 * 60 * 1000,
       httpOnly: true,
