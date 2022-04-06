@@ -11,6 +11,7 @@ import router from './routes/router.js';
 import auth from './middlewares/auth.js';
 import { login, createUser } from './controllers/user.js';
 import { requestLogger, errorLogger } from './middlewares/logger.js';
+import cors from './middlewares/cors.js';
 
 dotenv.config();
 
@@ -26,6 +27,8 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 
 app.use(requestLogger);
+
+app.use(cors);
 
 app.get('/crash-test', () => {
   setTimeout(() => {
