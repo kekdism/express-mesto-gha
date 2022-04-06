@@ -10,6 +10,7 @@ import Joi from 'joi';
 import router from './routes/router.js';
 import auth from './middlewares/auth.js';
 import { login, createUser } from './controllers/user.js';
+import { requestLogger, errorLogger } from './middlewares/logger.js';
 
 dotenv.config();
 
@@ -23,6 +24,14 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.use(cookieParser());
 app.use(bodyParser.json());
+
+app.use(requestLogger);
+
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт');
+  }, 0);
+});
 
 app.post('/signin', celebrate({
   [Segments.BODY]: Joi.object().keys({
@@ -43,6 +52,8 @@ app.post('/signup', celebrate({
 app.use(auth);
 
 app.use(router);
+
+app.use(errorLogger);
 
 app.use(errors());
 
