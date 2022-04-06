@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import {
   celebrate, errors, Segments,
 } from 'celebrate';
@@ -11,7 +12,6 @@ import router from './routes/router.js';
 import auth from './middlewares/auth.js';
 import { login, createUser } from './controllers/user.js';
 import { requestLogger, errorLogger } from './middlewares/logger.js';
-import cors from './middlewares/cors.js';
 
 dotenv.config();
 
@@ -28,7 +28,7 @@ app.use(bodyParser.json());
 
 app.use(requestLogger);
 
-app.use(cors);
+app.use(cors());
 
 app.get('/crash-test', () => {
   setTimeout(() => {
