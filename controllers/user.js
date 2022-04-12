@@ -110,11 +110,7 @@ export const login = async (req, res, next) => {
       throw new AuthorizationError('Не верный пароль');
     }
     const token = jwt.sign({ _id: user._id }, JWT_SECRET);
-    res.cookie('jwt', token, {
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      httpOnly: true,
-    });
-    res.send({ _id: user._id });
+    res.send({ token });
   } catch (err) {
     next(err);
   }

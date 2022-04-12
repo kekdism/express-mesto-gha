@@ -5,14 +5,15 @@ const { JWT_SECRET = 'JWT_SECRET' } = process.env;
 
 const auth = (req, res, next) => {
   try {
-    if (!req.cookies.jwt) {
+    if (!req.headers.authorization) {
       throw new AuthorizationError('Требуется авторизация');
     }
-    const { _id } = jsonwebtoken.verify(req.cookies.jwt, JWT_SECRET);
+    const token = req.headers.authorization.replace('Bearer ', '');
+    const { _id } = jsonwebtoken.verify(token, JWT_SECRET);
     req.user = { _id };
     next();
   } catch (err) {
-    next(err);
+    next(new AuthorizationError('Требуется авторизация'));
   }
 };
 

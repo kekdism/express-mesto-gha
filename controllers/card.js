@@ -4,7 +4,7 @@ import PermissionError from '../utils/errors/PermissionError.js';
 
 export const getCards = async (req, res, next) => {
   try {
-    const cards = await Card.find({}).populate('owner');
+    const cards = await Card.find({}).populate(['owner', 'likes']).sort({ createdAt: -1 });
     res.send(cards);
   } catch (err) {
     next(err);
@@ -15,7 +15,8 @@ export const createCard = async (req, res, next) => {
   try {
     const { name, link } = req.body;
     const { _id } = req.user;
-    const newCard = await Card.create({ name, link, owner: _id });
+    const { _id: cardId } = await Card.create({ name, link, owner: _id });
+    const newCard = await Card.findById({ _id: cardId }).populate(['owner', 'likes']);
     res.send(newCard);
   } catch (err) {
     next(err);
